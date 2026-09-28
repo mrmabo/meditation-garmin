@@ -2,15 +2,15 @@
 
 A calm meditation timer for iPhone designed to pair with a Garmin Connect IQ companion app.
 
-## MVP
+## Current MVP
 
-- SwiftUI meditation timer
+- Native SwiftUI meditation timer
 - Presets: 5, 10, 15, 20, 30, 45, 60 minutes
 - Gentle / Double / Progressive ending patterns
-- Local iPhone haptic fallback
-- Garmin communication abstraction
-- Session state that survives normal app lifecycle changes
-- No alarm-style sound by default
+- Pause, resume, stop, and foreground recovery
+- Local iPhone haptic fallback while the app is active
+- Garmin communication abstraction and command payloads
+- No alarm-style sound
 
 ## Architecture
 
@@ -27,21 +27,26 @@ iOS (SwiftUI)
  iPhone haptics       Connect IQ adapter
 ```
 
-The timer is represented by an absolute end date rather than decrementing a counter. This avoids timer drift when iOS throttles UI updates.
+The timer stores an absolute `endAt` date rather than relying on a decrementing counter. This avoids timer drift when UI updates are throttled.
 
 ## Run the iOS app
 
-1. Open `ios/MeditationGarmin.xcodeproj` in Xcode.
-2. Select your development team under Signing & Capabilities.
-3. Run on iOS 17+.
+The repository uses XcodeGen so the generated Xcode project does not need to be committed.
 
-The project has no third-party dependency for the local MVP.
+```bash
+brew install xcodegen
+cd ios
+xcodegen generate
+open MeditationGarmin.xcodeproj
+```
 
-## Garmin integration
+Then select your Apple development team under **Signing & Capabilities** and run on an iPhone with iOS 17+.
 
-`GarminBridge` defines the app-side protocol. `MockGarminBridge` keeps the project runnable before the proprietary Garmin Connect IQ Mobile SDK is added.
+## Garmin integration contract
 
-When the Garmin SDK is installed, implement `ConnectIQGarminBridge` and send this payload to the watch app:
+`GarminBridge` defines the app-side protocol. `MockGarminBridge` keeps the iOS project buildable before Garmin's proprietary Connect IQ Mobile SDK is added.
+
+When the SDK is installed, `ConnectIQGarminBridge.swift` is the integration seam. A start command is represented as:
 
 ```json
 {
@@ -49,14 +54,18 @@ When the Garmin SDK is installed, implement `ConnectIQGarminBridge` and send thi
   "sessionId": "UUID",
   "durationSeconds": 1200,
   "pattern": "progressive",
-  "startedAt": 178... 
+  "startedAt": 178...
 }
 ```
 
 Commands: `start`, `pause`, `resume`, `stop`.
 
-The watch should own its timer after receiving `start`; the phone should not need to stay awake or connected.
+### Important reliability rule
 
-## Next step
+The Garmin watch app must own its timer after receiving `start`. iOS can suspend a foreground app after the phone locks, so the phone should not be responsible for sending the final vibration at exactly 20:00. Once started, the watch can finish the session even through a temporary Bluetooth disconnect.
 
-Add the Connect IQ watch app under `garmin/`, then bind the official iOS Connect IQ Mobile SDK in `ConnectIQGarminBridge`.
+The current iPhone haptic is therefore a development fallback, not the final background reminder mechanism.
+
+## Next milestone
+
+Add the Connect IQ device app under `garmin/`, implement the gentle vibration patterns on-device, and bind Garmin's official iOS Connect IQ Mobile SDK to `GarminBridge`.
