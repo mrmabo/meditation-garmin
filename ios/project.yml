@@ -1,0 +1,19 @@
+name: MeditationGarmin
+options:
+  bundleIdPrefix: com.mrmabo
+  deploymentTarget:
+    iOS: "17.0"
+targets:
+  MeditationGarmin:
+    type: application
+    platform: iOS
+    sources: [MeditationGarmin]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mrmabo.meditationgarmin
+        SWIFT_VERSION: 5.0
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        TARGETED_DEVICE_FAMILY: "1,2"
