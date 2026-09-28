@@ -1,0 +1,16 @@
+# Xcode
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.build/
+
+# XcodeGen
+ios/MeditationGarmin.xcodeproj/
+
+# Garmin
+bin/
+*.prg
+*.iq
+
+# macOS
+.DS_Store
